@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miles/Kilometers Conversion Tester</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            margin: 0;
+            padding: 1rem;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem; /* Increased padding */
+            border-radius: 0.75rem; /* Tailwind rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Tailwind shadow-lg */
+            width: 100%;
+            max-width: 500px; /* Max width for better readability on larger screens */
+            text-align: center;
+        }
+        .input-field {
+            border: 1px solid #d1d5db; /* Tailwind gray-300 */
+            padding: 0.75rem 1rem; /* Increased padding */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            width: 100%;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box; /* Ensure padding doesn't increase width */
+        }
+        .button {
+            background-color: #3b82f6; /* Tailwind blue-500 */
+            color: white;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem; /* Increased padding */
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%; /* Make button full width */
+        }
+        .button:hover {
+            background-color: #2563eb; /* Tailwind blue-600 */
+        }
+        .button:disabled {
+            background-color: #9ca3af; /* Tailwind gray-400 */
+            cursor: not-allowed;
+        }
+        .feedback {
+            margin-top: 1.5rem; /* Increased margin */
+            padding: 1rem;
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            font-size: 0.875rem; /* Tailwind text-sm */
+        }
+        .feedback.success {
+            background-color: #d1fae5; /* Tailwind green-100 */
+            color: #065f46; /* Tailwind green-800 */
+            border: 1px solid #6ee7b7; /* Tailwind green-300 */
+        }
+        .feedback.partial {
+            background-color: #ffedd5; /* Tailwind orange-100 */
+            color: #9a3412; /* Tailwind orange-800 */
+            border: 1px solid #fdba74; /* Tailwind orange-300 */
+        }
+        .feedback.error {
+            background-color: #fee2e2; /* Tailwind red-100 */
+            color: #991b1b; /* Tailwind red-800 */
+            border: 1px solid #fca5a5; /* Tailwind red-300 */
+        }
+        .question-text {
+            font-size: 1.125rem; /* Tailwind text-lg */
+            margin-bottom: 1rem;
+            color: #1f2937; /* Tailwind gray-800 */
+        }
+        .unit-label {
+            font-size: 0.875rem; /* Tailwind text-sm */
+            color: #4b5563; /* Tailwind gray-600 */
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-2xl font-bold mb-6 text-gray-700">Unit Conversion Challenge</h1>
+        
+        <div id="questionArea">
+            <p id="questionText" class="question-text">Loading question...</p>
+        </div>
+
+        <div class="flex items-center mb-4">
+            <input type="number" id="userAnswer" class="input-field" placeholder="Your answer">
+            <span id="answerUnit" class="unit-label"></span>
+        </div>
+        
+        <button id="submitButton" class="button">Submit Answer</button>
+        
+        <div id="feedbackArea" class="feedback" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Constants for conversion
+        const MILE_TO_KM = 1.60934;
+        const KM_TO_MILE = 0.621371;
+
+        // DOM Elements
+        const questionTextElement = document.getElementById('questionText');
+        const userAnswerElement = document.getElementById('userAnswer');
+        const answerUnitElement = document.getElementById('answerUnit');
+        const submitButton = document.getElementById('submitButton');
+        const feedbackAreaElement = document.getElementById('feedbackArea');
+
+        // Store current question details
+        let currentQuestion = {
+            value: 0,
+            fromUnit: '',
+            toUnit: '',
+            correctAnswer: 0
+        };
+
+        // Function to generate a new question
+        function generateQuestion() {
+            // Generate a random number between 1 and 100
+            const randomNumber = Math.floor(Math.random() * 100) + 1;
+            currentQuestion.value = randomNumber;
+
+            // Randomly decide conversion type (miles to km or km to miles)
+            if (Math.random() < 0.5) { // Miles to Kilometers
+                currentQuestion.fromUnit = 'miles';
+                currentQuestion.toUnit = 'kilometers';
+                currentQuestion.correctAnswer = randomNumber * MILE_TO_KM;
+                questionTextElement.textContent = `Convert ${randomNumber} ${currentQuestion.fromUnit} to ${currentQuestion.toUnit}:`;
+                answerUnitElement.textContent = currentQuestion.toUnit;
+            } else { // Kilometers to Miles
+                currentQuestion.fromUnit = 'kilometers';
+                currentQuestion.toUnit = 'miles';
+                currentQuestion.correctAnswer = randomNumber * KM_TO_MILE;
+                questionTextElement.textContent = `Convert ${randomNumber} ${currentQuestion.fromUnit} to ${currentQuestion.toUnit}:`;
+                answerUnitElement.textContent = currentQuestion.toUnit;
+            }
+
+            // Clear previous answer and feedback
+            userAnswerElement.value = '';
+            feedbackAreaElement.style.display = 'none';
+            feedbackAreaElement.className = 'feedback'; // Reset classes
+            userAnswerElement.focus();
+            submitButton.disabled = false;
+        }
+
+        // Function to check the user's answer
+        function checkAnswer() {
+            const userAnswer = parseFloat(userAnswerElement.value);
+
+            // Validate input
+            if (isNaN(userAnswer)) {
+                feedbackAreaElement.textContent = 'Please enter a valid number.';
+                feedbackAreaElement.className = 'feedback error'; // Add error class
+                feedbackAreaElement.style.display = 'block';
+                return;
+            }
+
+            submitButton.disabled = true; // Disable button during feedback
+
+            const correctAnswer = parseFloat(currentQuestion.correctAnswer.toFixed(2)); // Round to 2 decimal places
+            const userAnswerRounded = parseFloat(userAnswer.toFixed(2)); // Round user answer for comparison
+            const difference = Math.abs(correctAnswer - userAnswerRounded);
+            
+            let feedbackMessage = '';
+            let feedbackClass = '';
+
+            if (difference === 0) {
+                feedbackMessage = `Excellent! ${currentQuestion.value} ${currentQuestion.fromUnit} is exactly ${correctAnswer.toFixed(2)} ${currentQuestion.toUnit}.`;
+                feedbackClass = 'success';
+            } else if (difference <= (correctAnswer * 0.05)) { // Within 5% tolerance
+                feedbackMessage = `Very close! Your answer: ${userAnswerRounded.toFixed(2)} ${currentQuestion.toUnit}. Correct answer: ${correctAnswer.toFixed(2)} ${currentQuestion.toUnit}. You were off by ${difference.toFixed(2)} ${currentQuestion.toUnit}.`;
+                feedbackClass = 'partial';
+            } else if (difference <= (correctAnswer * 0.15)) { // Within 15% tolerance
+                feedbackMessage = `Good try! Your answer: ${userAnswerRounded.toFixed(2)} ${currentQuestion.toUnit}. Correct answer: ${correctAnswer.toFixed(2)} ${currentQuestion.toUnit}. You were off by ${difference.toFixed(2)} ${currentQuestion.toUnit}.`;
+                feedbackClass = 'partial';
+            }
+            else {
+                feedbackMessage = `Keep practicing! Your answer: ${userAnswerRounded.toFixed(2)} ${currentQuestion.toUnit}. Correct answer: ${correctAnswer.toFixed(2)} ${currentQuestion.toUnit}. You were off by ${difference.toFixed(2)} ${currentQuestion.toUnit}.`;
+                feedbackClass = 'error';
+            }
+
+            feedbackAreaElement.textContent = feedbackMessage;
+            feedbackAreaElement.className = `feedback ${feedbackClass}`; // Add appropriate class
+            feedbackAreaElement.style.display = 'block';
+
+            // Load next question after a short delay
+            setTimeout(generateQuestion, 4000); // 4 seconds delay
+        }
+
+        // Event Listeners
+        submitButton.addEventListener('click', checkAnswer);
+        userAnswerElement.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Initial question generation when the page loads
+        window.onload = generateQuestion;
+    </script>
+</body>
+</html>
